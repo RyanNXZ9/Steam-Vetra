@@ -4,6 +4,9 @@
 
 ![Catálogo da edição publicada](docs/images/catalog.jpg)
 
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/8f7ef6cf-117a-403f-8b04-96631431ffdd" />
+
+
 > Imagem capturada da edição deste repositório. As capas são carregadas da Steam e podem faltar sem internet.
 
 ## Português
