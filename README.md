@@ -2,7 +2,7 @@
 
 **[Português](#português) · [English](#english)**
 
-![Catálogo da edição publicada](docs/images/catalog.png)
+![Catálogo da edição publicada](docs/images/catalog.jpg)
 
 > Imagem capturada da edição deste repositório. As capas são carregadas da Steam e podem faltar sem internet.
 
