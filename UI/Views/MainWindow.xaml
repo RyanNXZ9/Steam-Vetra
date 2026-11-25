@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:CatalogEntitlementManager.UI.ViewModels"
         xmlns:views="clr-namespace:CatalogEntitlementManager.UI.Views"
         mc:Ignorable="d"
-        Title="Game Catalog"
+        Title="Steam Vetra"
         Width="1280"
         Height="800"
         MinWidth="960"
@@ -165,7 +165,46 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
+        <Style x:Key="CatalogActionStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+            <Setter Property="Background" Value="{DynamicResource CardActionSurface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardActionEdge}" />
+            <Setter Property="Padding" Value="13,6" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Face" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1" CornerRadius="7">
+                            <Grid>
+                                <Border x:Name="HoldFill" CornerRadius="6" IsHitTestVisible="False">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Offset="0" Color="#077447"/>
+                                            <GradientStop Offset=".88" Color="#0FA861"/>
+                                            <GradientStop Offset="1" Color="#76F3AC"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Border.RenderTransform><ScaleTransform ScaleX="0" /></Border.RenderTransform>
+                                </Border>
+                                <Border x:Name="PointerGlow" Opacity="0" CornerRadius="6" IsHitTestVisible="False">
+                                    <Border.Background><RadialGradientBrush RadiusX=".28" RadiusY=".78"><GradientStop Color="#68BCEEFF" Offset="0" /><GradientStop Color="#00BCEEFF" Offset="1" /></RadialGradientBrush></Border.Background>
+                                </Border>
+                                <ContentPresenter x:Name="Label" Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock x:Name="HoldHint" Text="Segure" FontWeight="Bold" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White">
+                                    <TextBlock.Effect><DropShadowEffect BlurRadius="3" ShadowDepth="1" Opacity=".85"/></TextBlock.Effect>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Face" Property="BorderBrush" Value="#A9BED2" /></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Face" Property="Opacity" Value="0.8" /></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Face" Property="BorderBrush" Value="White" /></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Face" Property="Opacity" Value="0.55" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="CatalogCardStyle" TargetType="Border">
             <Setter Property="Width" Value="287" />
             <Setter Property="Margin" Value="0,0,12,14" />
@@ -179,7 +218,6 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="0,0,0,14" />
         </Style>
-
     </Window.Resources>
 
     <Border x:Name="WindowSurface" BorderBrush="{DynamicResource GlassEdge}" BorderThickness="1" CornerRadius="9"
@@ -206,7 +244,7 @@
 
                     <!-- App Branding -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Game Catalog"
+                        <TextBlock Text="Steam Vetra"
                                    FontWeight="Bold"
                                    FontSize="12.5"
                                    Foreground="#F1F5F9"
@@ -237,25 +275,610 @@
                 </Grid>
             </Border>
 
-            <DockPanel Grid.Row="1" Margin="20,8">
-                <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryButtonStyle}" Click="OpenLibrary_OnClick" Content="Library" Margin="12,0,0,0"/>
-                <ComboBox DockPanel.Dock="Right" Width="120" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" AutomationProperties.Name="Theme"/>
-                <TextBox Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" Padding="10,6" Margin="0,0,12,0" ToolTip="Search by title, genre or AppID" AutomationProperties.Name="Search games"/>
-            </DockPanel>
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Background="{DynamicResource CatalogVeil}" Padding="20">
-                <ItemsControl ItemsSource="{Binding FilteredTitles}">
-                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate><DataTemplate>
-                        <Border Style="{StaticResource CatalogCardStyle}" Padding="10"><StackPanel>
-                            <Image Source="{Binding ArtworkUri}" Height="124" Stretch="UniformToFill"/>
-                            <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" Margin="2,8" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock Text="{Binding Genre}" Foreground="#BDCDD9" Margin="2,0,0,10"/>
-                            <Button HorizontalAlignment="Left" Content="View on Steam" Style="{StaticResource SecondaryButtonStyle}" Click="OpenStore"/>
-                        </StackPanel></Border>
-                    </DataTemplate></ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+            <!-- Search, Filter & Settings Toolbar -->
+            <Border Grid.Row="1" Background="#27172530" BorderBrush="{DynamicResource GlassEdge}" BorderThickness="1"
+                    CornerRadius="22" Margin="20,8,20,0" Padding="9,7">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Search Box -->
+                    <Border Grid.Column="0" Background="{StaticResource GlassInput}" BorderBrush="{DynamicResource GlassEdge}"
+                            BorderThickness="1" CornerRadius="14" Padding="12,6" Margin="0,0,10,0">
+                        <Grid>
+                            <TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     Foreground="#F8FAFC"
+                                     CaretBrush="#38BDF8"
+                                     BorderThickness="0"
+                                     FontSize="13"
+                                     VerticalContentAlignment="Center" />
+                            <TextBlock Text="Search by title, genre, or AppID"
+                                       Foreground="#A6ABB0"
+                                       FontSize="13"
+                                       IsHitTestVisible="False"
+                                       VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SearchQuery}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+
+                    <!-- Quick Add Game / AppID Button -->
+                    <Button Grid.Column="1"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding AddCustomAppIdCommand}"
+                            ToolTip="Type any game name or Steam AppID in the search box and click to add it to your catalog"
+                            Content="Add by AppID"
+                            Margin="0,0,12,0" />
+
+                    <!-- Status Filter -->
+                    <ComboBox Grid.Column="2"
+                              ItemsSource="{Binding FilterOptions}"
+                              SelectedItem="{Binding SelectedFilter}"
+                              Background="{StaticResource GlassInput}"
+                              Foreground="#F8FAFC"
+                              BorderBrush="{DynamicResource GlassEdge}"
+                              Padding="10,6"
+                              Margin="0,0,12,0"
+                              VerticalContentAlignment="Center" />
+
+                    <!-- Settings & Diagnostics Toggle -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal">
+                    <Button Style="{StaticResource SecondaryButtonStyle}" Click="OpenLibrary_OnClick" Content="Library" Margin="0,0,8,0" />
+                    <Button
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding ToggleSettingsDrawerCommand}"
+                            Content="Settings" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Main Content Area: Title Catalog Grid -->
+            <Grid Grid.Row="2" Background="{DynamicResource CatalogVeil}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="20">
+                    <ScrollViewer.Style>
+                        <Style TargetType="ScrollViewer">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSettingsDrawerOpen}" Value="True">
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <BlurEffect Radius="20" RenderingBias="Performance" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsActivationModalOpen}" Value="True">
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <BlurEffect Radius="20" RenderingBias="Performance" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ScrollViewer.Style>
+                    <StackPanel>
+                        <TextBlock Text="Your catalog">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource SectionTitleStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding FilteredTitles.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    <ItemsControl ItemsSource="{Binding FilteredTitles}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:TitleCardViewModel}">
+                                <Border Style="{StaticResource CatalogCardStyle}">
+                                  <StackPanel>
+                                    <Border Background="#273650" OpacityMask="{StaticResource CoverMask}" Margin="8,8,8,0">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Height" Value="126" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ArtworkUri}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Image Source="{Binding ArtworkUri}" Stretch="Uniform" />
+                                    </Border>
+                                    <Grid Margin="13,12,13,13">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Title Name & Genre -->
+                                        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontSize="17"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#F8FAFC"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding AppId, StringFormat='AppID {0}'}" />
+                                            <TextBlock FontSize="12" Foreground="#ADB2B6" Margin="0,4,0,0" TextTrimming="CharacterEllipsis">
+                                                <Run Text="{Binding Publisher, Mode=OneWay}" />
+                                                <Run Text=" • " />
+                                                <Run Text="{Binding Genre, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <!-- Action Buttons -->
+                                        <Grid Grid.Row="3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <views:HoldButton Grid.Column="0"
+                                                    Style="{StaticResource CatalogActionStyle}"
+                                                    HorizontalAlignment="Left" MinWidth="102"
+                                                    Content="{Binding PrimaryActionText}"
+                                                    Command="{Binding DataContext.PrimaryCardActionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
+
+                                            <Button Grid.Column="1"
+                                                    Margin="6,0,0,0"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Content="Fixes"
+                                                    ToolTip="Manage Game Fixes, Online-Fix, Launcher Bypass &amp; Steamless DRM"
+                                                    Command="{Binding DataContext.OpenFixesModalCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
+
+                                            <Button Grid.Column="2"
+                                                    Margin="6,0,0,0"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Content="Install"
+                                                    ToolTip="Trigger native Steam install dialog (steam://install/AppID)"
+                                                    Command="{Binding DataContext.TriggerSteamRunCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </Grid>
+                                  </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="No games match your search or filter."
+                               Foreground="#ADB2B6" Margin="0,0,0,16">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding FilteredTitles.Count}" Value="0" />
+                                            <Condition Binding="{Binding StoreGames.Count}" Value="0" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <StackPanel Margin="0,12,0,0">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding StoreGames.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Discover on Steam" Style="{StaticResource SectionTitleStyle}" />
+                        <ItemsControl ItemsSource="{Binding StoreGames}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:SteamStoreGame}">
+                                    <Border Style="{StaticResource CatalogCardStyle}">
+                                        <StackPanel>
+                                            <Image Source="{Binding ArtworkUri}" Height="126" Stretch="UniformToFill" Margin="8,8,8,0"
+                                                   OpacityMask="{StaticResource CoverMask}" />
+                                            <StackPanel Margin="13,12,13,13">
+                                                <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Genre}" FontSize="12" Foreground="#ADB2B6" Margin="0,4,0,12" />
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Style="{StaticResource PrimaryActionButtonStyle}"
+                                                            Command="{Binding DataContext.AddStoreGameToCatalogCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Content="Add to catalog"
+                                                            Margin="0,0,8,0" />
+                                                    <Button Style="{StaticResource SecondaryButtonStyle}"
+                                                            Click="OpenSteamStore_OnClick"
+                                                            Content="View on Steam"
+                                                            ToolTip="{Binding StoreUri}"
+                                                            AutomationProperties.Name="{Binding Title, StringFormat='View {0} on Steam'}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Game Fixes & DRM Bypass Modal Overlay -->
+                <Grid Background="#C7111413"
+                      Visibility="{Binding IsFixesModalOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Border Width="620"
+                            MaxHeight="680"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            Background="#202422"
+                            BorderBrush="#424C46"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="24">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Header -->
+                            <Grid Grid.Row="0" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="Game Fixes &amp; DRM Bypass"
+                                               FontSize="22"
+                                               FontWeight="SemiBold"
+                                               Foreground="#F8FAFC" />
+                                    <TextBlock FontSize="13" Foreground="#94A3B8" Margin="0,4,0,0">
+                                        <Run Text="{Binding SelectedFixTitle.Title, Mode=OneWay}" FontWeight="SemiBold" Foreground="#F1F5F9" />
+                                        <Run Text=" (AppID " />
+                                        <Run Text="{Binding SelectedFixTitle.AppId, Mode=OneWay}" FontFamily="Consolas" Foreground="#38BDF8" />
+                                        <Run Text=")" />
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button Style="{StaticResource SecondaryButtonStyle}"
+                                        Content="Open Ryuu Fixes Web"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        ToolTip="Open https://generator.ryuu.lol/fixes in browser"
+                                        Command="{Binding OpenRyuuFixesCatalogCommand}" />
+                            </Grid>
+
+                            <!-- Detected Game Install Directory -->
+                            <StackPanel Grid.Row="1" Margin="0,0,0,14">
+                                <TextBlock Text="GAME INSTALLATION FOLDER (steamapps\common)"
+                                           FontSize="11"
+                                           FontWeight="Bold"
+                                           Foreground="#94A3B8"
+                                           Margin="0,0,0,6" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding SelectedFixInstallDirectory, UpdateSourceTrigger=PropertyChanged}"
+                                             Background="#161917"
+                                             Foreground="#F8FAFC"
+                                             BorderBrush="#424C46"
+                                             FontFamily="Consolas"
+                                             FontSize="12"
+                                             Padding="8,6" />
+                                    <Button Grid.Column="1"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Content="Browse Folder..."
+                                            Margin="6,0,0,0"
+                                            Click="BrowseFixGameFolder_OnClick" />
+                                    <Button Grid.Column="2"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Content="Open Folder"
+                                            Margin="6,0,0,0"
+                                            Click="OpenFixGameFolder_OnClick" />
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Available Fixes List (from LuaTools / Ryuu Metadata) -->
+                            <Border Grid.Row="2"
+                                    Background="#161917"
+                                    BorderBrush="#363A3D"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="12"
+                                    Margin="0,0,0,14"
+                                    MaxHeight="270">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding AvailableFixes}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#202422"
+                                                        BorderBrush="#363A3D"
+                                                        BorderThickness="1"
+                                                        CornerRadius="6"
+                                                        Padding="12"
+                                                        Margin="0,0,0,10">
+                                                    <StackPanel>
+                                                        <Grid>
+                                                            <TextBlock Text="{Binding DisplayTitle}"
+                                                                       FontSize="14"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="#F8FAFC"
+                                                                       VerticalAlignment="Center" />
+                                                            <Border Background="#1E293B"
+                                                                    CornerRadius="4"
+                                                                    Padding="8,3"
+                                                                    HorizontalAlignment="Right">
+                                                                <TextBlock Text="{Binding TagsSummary}"
+                                                                           FontSize="11"
+                                                                           FontWeight="SemiBold"
+                                                                           Foreground="#38BDF8" />
+                                                            </Border>
+                                                        </Grid>
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   FontSize="12"
+                                                                   Foreground="#CBD5E1"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,8,0,10" />
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                            <Button Style="{StaticResource PrimaryActionButtonStyle}"
+                                                                    Content="Auto-Apply Fix"
+                                                                    Command="{Binding DataContext.ApplyOnlineFixCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    CommandParameter="{Binding}" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- Status Feedback Bar -->
+                            <Border Grid.Row="3"
+                                    Background="#161917"
+                                    CornerRadius="6"
+                                    Padding="12,9"
+                                    Margin="0,0,0,16">
+                                <TextBlock Text="{Binding FixStatusMessage}"
+                                           FontSize="12"
+                                           Foreground="#CBD5E1"
+                                           TextWrapping="Wrap" />
+                            </Border>
+
+                            <!-- Action Footer: Apply Local Fix .ZIP, Steamless DRM Strip, Revert Fix, Close -->
+                            <Grid Grid.Row="4">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <Button Style="{StaticResource PrimaryActionButtonStyle}"
+                                            Content="Apply Fix .ZIP..."
+                                            ToolTip="Select a fix .zip downloaded from generator.ryuu.lol/fixes and extract into game folder with automatic backup"
+                                            Click="SelectLocalFixZipButton_OnClick"
+                                            Margin="0,0,8,0" />
+                                    <Button Style="{StaticResource SecondaryButtonStyle}"
+                                            Content="Steamless DRM Strip"
+                                            ToolTip="Run atom0s/Steamless CLI on game executables to remove SteamStub DRM (.exe.bak created automatically)"
+                                            Command="{Binding RunSteamlessDrmCommand}"
+                                            Margin="0,0,8,0" />
+                                    <Button Style="{StaticResource SecondaryButtonStyle}"
+                                            Content="Revert Fix"
+                                            ToolTip="Restore original backed-up files from .luatools-fix and remove added fix files"
+                                            IsEnabled="{Binding HasAppliedFixOnDisk}"
+                                            Command="{Binding RevertAppliedFixCommand}" />
+                                </StackPanel>
+
+                                <Button Style="{StaticResource SecondaryButtonStyle}"
+                                        Content="Close"
+                                        HorizontalAlignment="Right"
+                                        Command="{Binding CloseFixesModalCommand}" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Settings & Diagnostics Slide-Out Drawer -->
+                <Grid Background="{StaticResource GlassScrim}"
+                      Visibility="{Binding IsSettingsDrawerOpen, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Border Width="534"
+                            IsVisibleChanged="GlassPanel_OnIsVisibleChanged"
+                            HorizontalAlignment="Right"
+                            Background="{DynamicResource GlassPanel}"
+                            BorderBrush="{DynamicResource GlassEdge}"
+                            BorderThickness="1"
+                            CornerRadius="21"
+                            Margin="0,10,10,10"
+                            Padding="22">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Drawer Header -->
+                            <Grid Grid.Row="0" Margin="0,0,0,16">
+                                <TextBlock Text="Settings"
+                                           FontSize="26"
+                                           FontWeight="SemiBold"
+                                           Foreground="#F8FAFC"
+                                           VerticalAlignment="Center" />
+                                <Button Style="{StaticResource SecondaryButtonStyle}"
+                                        Content="Close"
+                                        HorizontalAlignment="Right"
+                                        Command="{Binding ToggleSettingsDrawerCommand}" />
+                            </Grid>
+
+                            <!-- Drawer Body -->
+                            <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0" Padding="0">
+                                <TabItem x:Name="GeneralSettingsTab" Header="General">
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,6,0">
+                                <StackPanel>
+                                    <TextBlock Text="Steam installation folder"
+                                               FontSize="11"
+                                               FontWeight="Bold"
+                                               Foreground="#94A3B8"
+                                               Margin="0,0,0,6" />
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0"
+                                                 Text="{Binding TargetBaseDirectory, UpdateSourceTrigger=PropertyChanged}"
+                                                 Background="{StaticResource GlassInput}"
+                                                 Foreground="#F8FAFC"
+                                                 BorderBrush="#334155"
+                                                 Padding="8,6" />
+                                        <Button Grid.Column="1"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Content="Browse"
+                                                Margin="6,0,0,0"
+                                                Click="BrowseDirectoryButton_OnClick" />
+                                        <Button Grid.Column="2"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Content="Detect Steam"
+                                                ToolTip="Detect from HKCU\Software\Valve\Steam"
+                                                Margin="6,0,0,0"
+                                                Command="{Binding AutoDetectSteamPathCommand}" />
+                                    </Grid>
+
+                                    <TextBlock Text="Manifest endpoint"
+                                               FontSize="11"
+                                               FontWeight="Bold"
+                                               Foreground="#94A3B8"
+                                               Margin="0,12,0,6" />
+                                    <TextBox Text="{Binding ManifestEndpointUrl, UpdateSourceTrigger=PropertyChanged}"
+                                             Background="{StaticResource GlassInput}"
+                                             Foreground="#F8FAFC"
+                                             BorderBrush="#334155"
+                                             Padding="8,6" />
+
+                                    <Grid Margin="0,10,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Branch"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="#94A3B8"
+                                                       Margin="0,0,0,6" />
+                                            <TextBox Text="{Binding ManifestBranch, UpdateSourceTrigger=PropertyChanged}"
+                                                     FontFamily="Consolas"
+                                                     Background="{StaticResource GlassInput}"
+                                                     Foreground="#F8FAFC"
+                                                     BorderBrush="#334155"
+                                                     Padding="8,6" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <CheckBox Content="Simulate manifests locally"
+                                              IsChecked="{Binding UseOfflineManifestGenerator}"
+                                              Foreground="#E2E8F0"
+                                              Margin="0,4,0,6" />
+
+                                    <CheckBox Content="Sync Steam and download after adding"
+                                              IsChecked="{Binding RestartSteamAfterProvision}"
+                                              Foreground="#E2E8F0"
+                                              Margin="0,4,0,14" />
+
+                                    <!-- Operation Logs -->
+                                    <TextBlock Text="Activity log"
+                                               FontSize="11"
+                                               FontWeight="Bold"
+                                               Foreground="#94A3B8"
+                                               Margin="0,0,0,6" />
+                                    <Border Background="{StaticResource GlassInput}" BorderBrush="{DynamicResource GlassEdge}" BorderThickness="1" CornerRadius="12" Padding="10" Height="190">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <ItemsControl ItemsSource="{Binding OperationLogs}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding FormattedLine}"
+                                                                   FontFamily="Consolas"
+                                                                   FontSize="11"
+                                                                   Foreground="#CBD5E1"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,0,0,4" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+
+                                </TabItem>
+                                <TabItem Header="Themes">
+                                    <StackPanel Margin="6,16,6,0">
+                                        <TextBlock Text="Color palette" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
+                                        <ListBox x:Name="ThemeSelector" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme, Mode=TwoWay}" Background="Transparent" BorderThickness="0" AutomationProperties.Name="Color palette">
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
+                                                    <Setter Property="Margin" Value="0,0,0,6" />
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="ListBoxItem">
+                                                                <Border x:Name="Tile" Background="#55152030" BorderBrush="#42FFFFFF" BorderThickness="1" CornerRadius="12" Padding="12">
+                                                                    <DockPanel>
+                                                                        <Ellipse x:Name="Sample" DockPanel.Dock="Left" Width="17" Height="17" Margin="0,0,12,0" Fill="#A4BBC4" />
+                                                                        <TextBlock x:Name="Check" DockPanel.Dock="Right" Text="✓" Visibility="Hidden" Foreground="White" />
+                                                                        <ContentPresenter VerticalAlignment="Center" />
+                                                                    </DockPanel>
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <DataTrigger Binding="{Binding}" Value="CodeNexus"><Setter TargetName="Sample" Property="Fill" Value="#267AFF" /></DataTrigger>
+                                                                    <DataTrigger Binding="{Binding}" Value="GTA 6"><Setter TargetName="Sample" Property="Fill" Value="#F087AF" /></DataTrigger>
+                                                                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Tile" Property="Background" Value="#40CCDFFF" /></Trigger>
+                                                                    <Trigger Property="IsSelected" Value="True"><Setter TargetName="Check" Property="Visibility" Value="Visible" /><Setter TargetName="Tile" Property="BorderBrush" Value="#DDEFFFFF" /></Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </ListBox.ItemContainerStyle>
+                                        </ListBox>
+                                    </StackPanel>
+                                </TabItem>
+                            </TabControl>
+                            <!-- Drawer Footer -->
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+                                <Button Style="{StaticResource SecondaryButtonStyle}"
+                                        Content="Sync Steam Now"
+                                        Visibility="{Binding ElementName=GeneralSettingsTab, Path=IsSelected, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        Command="{Binding RestartSteamNowCommand}"
+                                        Margin="0,0,10,0" />
+                                <Button Style="{StaticResource PrimaryActionButtonStyle}"
+                                        Content="Save Settings"
+                                        Command="{Binding SaveSettingsCommand}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
         </Grid>
     </Border>
 </Window>
-

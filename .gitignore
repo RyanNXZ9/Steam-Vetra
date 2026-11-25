@@ -9,7 +9,5 @@ obj/
 *.log
 *.dat
 .env*
-appsettings*.json
 player.json
 theme.txt
-

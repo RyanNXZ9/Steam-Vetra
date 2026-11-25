@@ -4,7 +4,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Runtime.InteropServices;
-
+using CatalogEntitlementManager.Models;
 using CatalogEntitlementManager.UI.ViewModels;
 using Microsoft.Win32;
 
@@ -188,16 +188,92 @@ public partial class MainWindow : Window
         Close();
     }
 
-    private void OpenStore(object sender, RoutedEventArgs e)
+    private void BrowseDirectoryButton_OnClick(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button { DataContext: TitleCardViewModel game }) return;
+        var dialog = new OpenFolderDialog
+        {
+            Title = "Select Steam Installation Directory",
+            InitialDirectory = System.IO.Directory.Exists(_viewModel.TargetBaseDirectory)
+                ? _viewModel.TargetBaseDirectory
+                : AppContext.BaseDirectory
+        };
+
+        if (dialog.ShowDialog(this) == true && !string.IsNullOrWhiteSpace(dialog.FolderName))
+        {
+            _viewModel.TargetBaseDirectory = dialog.FolderName;
+            _viewModel.SaveConfiguration();
+        }
+    }
+
+    private void OpenSteamStore_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: SteamStoreGame game })
+        {
+            return;
+        }
+
         try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo($"https://store.steampowered.com/app/{game.AppId}/") { UseShellExecute = true });
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(game.StoreUri.AbsoluteUri)
+            {
+                UseShellExecute = true
+            });
         }
         catch (System.ComponentModel.Win32Exception)
         {
-            MessageBox.Show(this, "Could not open the store.", "Game Catalog");
+            MessageBox.Show(this, "The Steam page could not be opened.", "Steam Store",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void BrowseFixGameFolder_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = "Select Installed Game Directory (steamapps\\common\\<Game>)",
+            InitialDirectory = System.IO.Directory.Exists(_viewModel.SelectedFixInstallDirectory)
+                ? _viewModel.SelectedFixInstallDirectory
+                : _viewModel.TargetBaseDirectory
+        };
+
+        if (dialog.ShowDialog(this) == true && !string.IsNullOrWhiteSpace(dialog.FolderName))
+        {
+            _viewModel.SelectedFixInstallDirectory = dialog.FolderName;
+        }
+    }
+
+    private void OpenFixGameFolder_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_viewModel.SelectedFixInstallDirectory) ||
+            !System.IO.Directory.Exists(_viewModel.SelectedFixInstallDirectory))
+        {
+            return;
+        }
+
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = _viewModel.SelectedFixInstallDirectory,
+                UseShellExecute = true
+            });
+        }
+        catch
+        {
+        }
+    }
+
+    private async void SelectLocalFixZipButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "Select Game Fix Archive (.zip)",
+            Filter = "Fix Archives (*.zip)|*.zip|All Files (*.*)|*.*"
+        };
+
+        if (dialog.ShowDialog(this) == true && !string.IsNullOrWhiteSpace(dialog.FileName))
+        {
+            await _viewModel.ApplyLocalFixArchiveAsync(dialog.FileName);
         }
     }
 
@@ -208,4 +284,3 @@ public partial class MainWindow : Window
             : WindowState.Maximized;
     }
 }
-

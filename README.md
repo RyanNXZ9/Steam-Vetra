@@ -2,42 +2,36 @@
 
 **[Português](#português) · [English](#english)**
 
-![Catálogo da edição publicada](docs/images/catalog.jpg)
+![Steam Vetra catalog from this source edition](docs/images/catalog.jpg)
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/8f7ef6cf-117a-403f-8b04-96631431ffdd" />
+Capturas adicionais enviadas pelo autor / Additional screenshots supplied by the author (may show earlier private flows):
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/db71a52f-9335-40d9-ae65-a4aca7981944" />
+<img width="960" alt="Steam Vetra previous interface capture" src="https://github.com/user-attachments/assets/8f7ef6cf-117a-403f-8b04-96631431ffdd" />
 
-
-> Imagem capturada da edição deste repositório. As capas são carregadas da Steam e podem faltar sem internet.
+<img width="960" alt="Steam Vetra previous settings capture" src="https://github.com/user-attachments/assets/db71a52f-9335-40d9-ae65-a4aca7981944" />
 
 ## Português
 
-Steam Vetra é um catálogo de jogos para Windows. **Esta edição compila e abre**, mas seus recursos são limitados aos listados abaixo. **Ela não ativa chaves, não concede licenças, não instala jogos e não aplica correções de DRM.**
+Esta edição mantém a interface original, o catálogo, a biblioteca e a integração Lua Tools. O **sistema de chaves de produto foi removido**. A chave pessoal da API Ryuu não está no código, no `appsettings.json` nem nas imagens. O módulo anti-crack também não faz parte do repositório.
 
-### Recursos disponíveis
+### Recursos
 
-| Recurso | Funcionamento |
+| Recurso | Estado |
 | --- | --- |
-| Catálogo e busca | Lê `catalog.json` e filtra por título, gênero ou AppID. |
-| Capas | Carrega imagens do CDN da Steam; requer internet. |
-| Loja | `View on Steam` abre a página oficial do jogo. |
-| Biblioteca local | Permite adicionar títulos, identifica instalações pelos arquivos locais da Steam e abre jogos instalados pelo cliente Steam. `Remove` tira o título da lista local sem desinstalá-lo. |
-| Perfil | Nome e foto salvos somente neste computador. |
-| Temas | Glass, GTA 6 e CodeNexus, com preferência local. |
+| Catálogo, busca e capas | Funcional; imagens locais e da Steam. |
+| Biblioteca e perfil | Locais no computador; nome, foto e coleção. |
+| Temas | Glass, GTA 6 e CodeNexus. |
+| Lua Tools | Integração preservada para consultar metadados, baixar/importar Lua e manifestos, provisionar arquivos na pasta configurada da Steam e acionar o cliente Steam. |
+| Fixes | Interface e serviços de consulta, aplicação e reversão preservados. Arquivos remotos dependem da disponibilidade dos serviços externos. |
+| Ativação por chave | Removida. Não há validação, HWID de licença ou chave de produto nesta edição. |
 
-**Retirado por medidas de segurança:** módulo anti-crack, vínculo por HWID, geração, validação e ativação de chaves, integrações privadas de provisionamento, ferramentas de modificação de DRM e configuração de produção. Os botões `Activate Key`, `Fixes` e `Install` e seus fluxos não estão nesta edição. Não há servidor de ativação incluso. Capturas da versão privada que mostrem esses botões não representam o código publicado.
+**O build não prova o fluxo remoto de ponta a ponta.** Sem credencial Ryuu, requisições que a API exigir autenticar podem falhar. O programa não simula sucesso quando a consulta remota falha. `Simulate manifests locally` é uma opção de teste explícita; seus resultados não comprovam um manifesto real.
 
-### Requisitos
+### Requisitos e execução
 
-- Windows 10 ou 11, x64.
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) para compilar. Um binário compilado exige o .NET 8 Desktop Runtime.
-- Internet para restaurar o pacote NuGet e carregar capas. Após compilar, o programa abre offline, sem as capas não armazenadas em cache.
-- Steam para identificar instalações e abrir jogos locais. Catálogo e perfil funcionam sem Steam.
-
-### Compilar e executar
-
-No PowerShell, na pasta do repositório:
+- Windows 10/11 x64, [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0), PowerShell.
+- Internet para restaurar NuGet e consultar os serviços externos.
+- Steam e a integração Lua Tools/OpenSteamTool configurados para os fluxos de provisionamento.
 
 ```powershell
 dotnet restore .\CatalogEntitlementManager.csproj
@@ -45,84 +39,66 @@ dotnet build .\CatalogEntitlementManager.csproj -c Release
 dotnet run --project .\CatalogEntitlementManager.csproj -c Release
 ```
 
-O executável fica em `bin\Release\net8.0-windows\CatalogEntitlementManager.exe`. O build copia `catalog.json` para a pasta de saída. Mantenha esse arquivo junto do executável se distribuir manualmente.
+O executável fica em `bin\Release\net8.0-windows\CatalogEntitlementManager.exe`. `appsettings.json` é copiado para a saída. Em `Settings > General`, confira a pasta da Steam, o endpoint de manifestos e o branch. Em `Settings > Themes`, escolha a paleta. No catálogo, `Add to Steam` busca os arquivos e os provisiona na pasta configurada; `Fixes` abre as ferramentas de correção; `Library` mostra jogos e perfil locais.
 
-### Como usar
+Para usar uma credencial Ryuu **sem gravá-la no repositório**, defina a variável de ambiente apenas na sessão que iniciará o programa:
 
-1. Busque pelo nome, gênero ou AppID.
-2. Use `View on Steam` para abrir a loja oficial.
-3. Abra `Library` para ver a coleção e as instalações detectadas. `Add game` adiciona um título do catálogo; `Remove` retira somente o registro local.
-4. Em `Library > Profile`, defina nome e foto.
-5. Escolha o tema na barra superior. A preferência fica salva neste computador.
-
-![Dados locais do aplicativo](docs/images/local-data.svg)
-
-O diretório `%LOCALAPPDATA%\CatalogEntitlementManager.Community` contém `player.json` (perfil, foto incorporada e coleção) e `theme.txt` (tema). O aplicativo também lê manifestos de instalação em `steamapps`. O projeto não hospeda perfis. As capas são requisitadas ao CDN da Steam.
-
-### Estrutura do projeto
-
-```text
-catalog.json                  Lista de títulos
-Storage/LocalGameLibrary.cs  Coleção, perfil e detecção local da Steam
-UI/ViewModels/               Busca e estado da interface
-UI/Views/                    Janelas WPF
-docs/images/                 Imagens deste README
+```powershell
+$env:STEAM_VETRA_RYUU_API_KEY = '<sua-chave>'
+dotnet run --project .\CatalogEntitlementManager.csproj -c Release
+Remove-Item Env:\STEAM_VETRA_RYUU_API_KEY
 ```
+
+Esse comando é um exemplo: substitua o valor localmente e não cole sua chave em issues ou commits. A variável é lida pelo cliente de manifestos e pelo serviço de fixes. Se a API aceitar requisições sem credencial, ela pode ficar indefinida.
+
+O perfil e a coleção ficam em `%LOCALAPPDATA%\CatalogEntitlementManager\player.json`. A configuração do aplicativo fica no `appsettings.json` ao lado do executável; ela contém catálogo e opções sem credenciais. A pasta Steam configurada recebe arquivos somente ao executar uma ação de provisionamento.
 
 ### Prompt para continuar com uma IA
 
-Use este texto e preencha apenas as especificações do **seu próprio serviço de licenças**. O backend privado e as credenciais removidas não acompanham o repositório.
-
 ```text
-Trabalhe no repositório Steam Vetra (WPF, .NET 8, Windows x64).
-Leia README.md, CatalogEntitlementManager.csproj, Storage/LocalGameLibrary.cs,
-UI/ViewModels e UI/Views. Preserve catálogo, biblioteca, perfil e temas.
+Trabalhe no Steam Vetra, WPF/.NET 8 x64. Leia primeiro README.md,
+App.xaml.cs, Models/AppConfig.cs, Storage/JsonConfigStore.cs,
+Core/Services/ManifestClientService.cs, WorkspaceProvisionerService.cs,
+GameFixService.cs e UI/ViewModels/MainViewModel.cs.
 
-Objetivo: implementar um fluxo de licença usando um serviço sob meu controle,
-independente dos módulos privados removidos. Vou fornecer:
-- contrato da API: [documentação ou OpenAPI]
-- formato de chave e resposta de ativação: [especificação]
-- regra de vínculo ao dispositivo, se existir: [especificação]
-- origem das credenciais em runtime: [especificação]
+Preserve a integração Lua Tools, a interface, o catálogo, os temas e o perfil.
+O sistema de chaves de produto foi removido; não o recrie por suposição.
+Não coloque segredos no código ou no appsettings.json. A credencial Ryuu vem
+da variável STEAM_VETRA_RYUU_API_KEY, se for exigida pelo endpoint.
 
-Identifique dados técnicos indispensáveis ainda ausentes antes de codificar.
-Implemente cliente HTTP com timeout, cancelamento e tratamento de falhas;
-mostre estados claros na interface. Nunca exiba ou registre a chave completa.
-Não grave tokens, chaves ou endpoints privados no repositório. Armazene
-segredos locais de modo apropriado e separe desenvolvimento de produção.
-Não simule ativação bem-sucedida.
+Objetivo específico: [descreva aqui a falha ou o recurso].
+Ambiente: [versão do Windows, .NET, Steam e integração Lua Tools].
+Contrato/erro da API: [documentação, resposta ou log sem segredos].
 
-Entregue código completo, configuração de exemplo sem segredos, testes do
-contrato e instruções exatas. Execute dotnet build e os testes disponíveis.
-Relate o que foi verificado e o que depende do meu serviço para validar
-de ponta a ponta.
+Implemente o fluxo completo, trate cancelamento e falhas de rede e não finja
+sucesso quando faltarem Lua ou manifestos. Preserve arquivos existentes com
+backup e rollback. Compile com dotnet build -c Release; teste parsing e
+provisionamento com fixtures sem tocar na instalação real da Steam.
+Documente exatamente o que foi verificado e o que depende da API externa.
 ```
 
 ## English
 
-Steam Vetra is a Windows game catalog. **This repository edition builds and launches**, with only the features listed below. **It does not activate keys, grant licenses, install games, or apply DRM fixes.**
+This edition keeps the original interface, catalog, library, and Lua Tools integration. The **product-key system has been removed**. The personal Ryuu API key is absent from the source, `appsettings.json`, and images. The anti-crack module is also absent.
 
-### Available features
+### Features
 
-| Feature | Behavior |
+| Feature | State |
 | --- | --- |
-| Catalog and search | Reads `catalog.json`; filters by title, genre, or AppID. |
-| Cover art | Fetches images from Steam's CDN; internet required. |
-| Store links | `View on Steam` opens the official store page. |
-| Local library | Adds catalog titles, detects installations from local Steam files, and launches installed games through Steam. `Remove` only removes a local list entry. |
-| Profile | Name and photo are saved on this computer only. |
-| Themes | Glass, GTA 6, and CodeNexus, with a locally saved preference. |
+| Catalog, search, cover art | Available; local and Steam images. |
+| Library and profile | Stored locally on the computer. |
+| Themes | Glass, GTA 6, and CodeNexus. |
+| Lua Tools | Integration retained for metadata queries, Lua/manifest download and import, provisioning into the configured Steam folder, and Steam launch actions. |
+| Fixes | Query, apply, and revert UI and services retained. Remote files depend on external service availability. |
+| Product-key activation | Removed, including license HWID and validation. |
 
-**Removed for security reasons:** the anti-crack module, HWID binding, key generation/validation/activation, private provisioning integrations, DRM modification tools, and production configuration. `Activate Key`, `Fixes`, and `Install` and their workflows are absent. No activation server is included. Screenshots of the private version showing those buttons do not represent this repository edition.
+**A successful build does not establish that the remote workflow succeeds end to end.** Without a Ryuu credential, endpoints that require authentication can fail. The app no longer reports simulated success after a remote fetch failure. `Simulate manifests locally` is an explicit test option; its output is not a real manifest.
 
-### Requirements and setup
+### Requirements and run
 
-- Windows 10 or 11, x64.
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) to build. A compiled binary needs the .NET 8 Desktop Runtime.
-- Internet for NuGet restore and cover art. After building, the app can launch offline without uncached covers.
-- Steam for installed-game detection and launching local games. Catalog and profile also work without Steam.
-
-From PowerShell in the repository root:
+- Windows 10/11 x64, [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0), PowerShell.
+- Internet access for NuGet restore and external services.
+- Steam and Lua Tools/OpenSteamTool configured for provisioning workflows.
 
 ```powershell
 dotnet restore .\CatalogEntitlementManager.csproj
@@ -130,41 +106,37 @@ dotnet build .\CatalogEntitlementManager.csproj -c Release
 dotnet run --project .\CatalogEntitlementManager.csproj -c Release
 ```
 
-The executable is `bin\Release\net8.0-windows\CatalogEntitlementManager.exe`. The build copies `catalog.json` to the output folder; keep it beside the executable for manual distribution.
+The executable is at `bin\Release\net8.0-windows\CatalogEntitlementManager.exe`; `appsettings.json` is copied beside it. In `Settings > General`, check the Steam directory, manifest endpoint, and branch. `Settings > Themes` changes the palette. `Add to Steam` fetches and provisions files into the configured folder; `Fixes` opens fix tools; `Library` shows local games and profile.
 
-### Using the app
+If Ryuu requires a credential, supply it only to the launch session:
 
-1. Search by title, genre, or AppID.
-2. Choose `View on Steam` to open the official store page.
-3. Open `Library` for added titles and detected installations. `Add game` adds a catalog title; `Remove` deletes only its local entry.
-4. Open `Library > Profile` to set a local name and photo.
-5. Select a theme in the top bar; the preference is saved on this device.
+```powershell
+$env:STEAM_VETRA_RYUU_API_KEY = '<your-key>'
+dotnet run --project .\CatalogEntitlementManager.csproj -c Release
+Remove-Item Env:\STEAM_VETRA_RYUU_API_KEY
+```
 
-The screenshot and diagram above show this repository edition. `%LOCALAPPDATA%\CatalogEntitlementManager.Community` holds `player.json` (profile, embedded photo, collection) and `theme.txt` (theme). The app reads Steam installation manifests under `steamapps`; it does not host profiles. Cover art is requested from Steam's CDN.
+Replace the example locally; do not commit the value. The manifest and fixes clients read this variable. Leave it unset if the endpoint allows anonymous requests. Local profile and collection data live in `%LOCALAPPDATA%\CatalogEntitlementManager\player.json`. `appsettings.json` holds a catalog and non-secret options. The configured Steam folder is written only during a provisioning action.
 
-### Continue development with an AI coding agent
-
-Fill in the details of a license service **you control**. The private backend and removed credentials are not in the repository.
+### AI coding prompt
 
 ```text
-Work in the Steam Vetra repository (WPF, .NET 8, Windows x64).
-Read README.md, CatalogEntitlementManager.csproj, Storage/LocalGameLibrary.cs,
-UI/ViewModels, and UI/Views. Preserve the catalog, library, profile, and themes.
+Work in Steam Vetra (WPF/.NET 8 x64). Read README.md, App.xaml.cs,
+Models/AppConfig.cs, Storage/JsonConfigStore.cs, ManifestClientService.cs,
+WorkspaceProvisionerService.cs, GameFixService.cs, and MainViewModel.cs.
 
-Goal: implement a license flow for a service under my control, independent
-of the removed private modules. I will provide:
-- API contract: [documentation or OpenAPI]
-- key format and activation response: [specification]
-- device-binding rule, if any: [specification]
-- runtime credential source: [specification]
+Preserve Lua Tools integration, interface, catalog, themes, and profile.
+The product-key system was removed; do not recreate it by assumption.
+Never commit secrets or add them to appsettings.json. Read the optional Ryuu
+credential from STEAM_VETRA_RYUU_API_KEY.
 
-Identify essential missing technical details before coding. Implement an HTTP
-client with timeouts, cancellation, and error handling, and clear UI states.
-Never display or log a complete key. Do not commit tokens, keys, or private
-endpoints. Store local secrets appropriately and separate development from
-production configuration. Do not simulate successful activation.
+Specific goal: [describe the bug or feature].
+Environment: [Windows, .NET, Steam, and Lua Tools versions].
+API contract/error: [documentation, response, or redacted log].
 
-Deliver complete code, a secret-free example configuration, contract tests,
-and exact build/run instructions. Run dotnet build and available tests.
-State what was verified and what requires my service for end-to-end testing.
+Implement the complete flow, handle cancellation and network errors, and do
+not report success without required Lua or manifests. Preserve existing files
+with backup and rollback. Run dotnet build -c Release and test parsing and
+provisioning with fixtures away from a real Steam installation. State what
+was verified and what still depends on the external API.
 ```

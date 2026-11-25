@@ -22,4 +22,3 @@ public abstract class ObservableObject : INotifyPropertyChanged
         return true;
     }
 }
-

@@ -60,6 +60,8 @@ public partial class LocalLibraryWindow : Window
     private void RefreshGames()
     {
         var titles = new Dictionary<uint, string>(_installed);
+        foreach (var card in _catalog.AllTitles)
+            titles.TryAdd(card.AppId, card.Title);
         foreach (var game in _player.Added)
             titles.TryAdd(game.Key, game.Value);
         var choices = new Dictionary<uint, string>(titles);
@@ -206,4 +208,3 @@ public partial class LocalLibraryWindow : Window
     private static bool IsFileError(Exception ex) =>
         ex is IOException or UnauthorizedAccessException or JsonException or FormatException or NotSupportedException or InvalidDataException;
 }
-

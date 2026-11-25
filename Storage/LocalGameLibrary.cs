@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Microsoft.Win32;
+using CatalogEntitlementManager.Core.Services;
 
 namespace CatalogEntitlementManager.Storage;
 
@@ -23,9 +23,7 @@ public sealed record LibraryGame(uint AppId, string Title, bool Installed)
 internal static class LocalGameLibrary
 {
     internal static readonly string PlayerFile = Path.Combine(Environment.GetFolderPath(
-        Environment.SpecialFolder.LocalApplicationData), "CatalogEntitlementManager.Community", "player.json");
-
-    internal static string? DetectSteamPath() => Registry.GetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", null) as string;
+        Environment.SpecialFolder.LocalApplicationData), "CatalogEntitlementManager", "player.json");
 
     internal static LocalPlayerData Load(string path)
     {
@@ -55,7 +53,7 @@ internal static class LocalGameLibrary
     internal static Dictionary<uint, string> ReadInstalled(string configuredRoot)
     {
         var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var root in new[] { configuredRoot, DetectSteamPath() })
+        foreach (var root in new[] { configuredRoot, new SteamLocatorService().DetectSteamInstallPath() })
         {
             if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root)) continue;
             roots.Add(root);
@@ -93,7 +91,7 @@ internal static class LocalGameLibrary
     internal static Dictionary<uint,string> ReadCachedCovers(string configuredRoot, IEnumerable<uint> games)
     {
         var covers = new Dictionary<uint,string>();
-        var install = DetectSteamPath();
+        var install = new SteamLocatorService().DetectSteamInstallPath();
         foreach (var root in new[] { configuredRoot, install }.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             if (string.IsNullOrWhiteSpace(root)) continue;
@@ -123,4 +121,3 @@ internal static class LocalGameLibrary
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return string.Empty; }
     }
 }
-

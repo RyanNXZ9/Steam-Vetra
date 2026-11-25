@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="230" viewBox="0 0 960 230" role="img" aria-labelledby="title desc">
   <title id="title">Steam Vetra local data flow</title>
-  <desc id="desc">The app reads catalog.json and Steam manifests, saves player.json and theme.txt locally, and fetches covers from the Steam CDN.</desc>
+  <desc id="desc">The app reads appsettings.json and Steam manifests, saves a local player profile, and fetches covers from the Steam CDN.</desc>
   <rect width="960" height="230" rx="22" fill="#152331"/>
   <g fill="#203344" stroke="#7898ad" stroke-width="1.5">
     <rect x="30" y="68" width="215" height="94" rx="16"/>
@@ -9,11 +9,11 @@
   </g>
   <g fill="#eaf3f8" font-family="Segoe UI, sans-serif" text-anchor="middle">
     <text x="137" y="104" font-size="19" font-weight="600">Local inputs</text>
-    <text x="137" y="130" font-size="14">catalog.json · Steam manifests</text>
+    <text x="137" y="130" font-size="14">appsettings.json · Steam files</text>
     <text x="480" y="100" font-size="23" font-weight="600">Steam Vetra</text>
     <text x="480" y="130" font-size="14">WPF · .NET 8 · Windows</text>
     <text x="822" y="104" font-size="19" font-weight="600">Local files</text>
-    <text x="822" y="130" font-size="14">player.json · theme.txt</text>
+    <text x="822" y="130" font-size="14">player.json · Steam config</text>
     <text x="480" y="208" font-size="14" fill="#9dbaca">Cover art: Steam CDN when online</text>
   </g>
   <g fill="none" stroke="#9dbaca" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
