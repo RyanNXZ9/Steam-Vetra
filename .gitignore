@@ -1,0 +1,15 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.pfx
+*.pem
+*.key
+*.log
+*.dat
+.env*
+appsettings*.json
+player.json
+theme.txt
+
