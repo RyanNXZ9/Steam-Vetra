@@ -21,7 +21,7 @@ Esta edição mantém a interface original, o catálogo, a biblioteca e a integr
 | Catálogo, busca e capas | Funcional; imagens locais e da Steam. |
 | Biblioteca e perfil | Locais no computador; nome, foto e coleção. |
 | Temas | Glass, GTA 6 e CodeNexus. |
-| Lua Tools | Integração preservada para consultar metadados, baixar/importar Lua e manifestos, provisionar arquivos na pasta configurada da Steam e acionar o cliente Steam. |
+| Injection Tools | Integração preservada para consultar metadados, baixar/importar Lua e manifestos, provisionar arquivos na pasta configurada da Steam e acionar o cliente Steam. |
 | Fixes | Interface e serviços de consulta, aplicação e reversão preservados. Arquivos remotos dependem da disponibilidade dos serviços externos. |
 | Ativação por chave | Removida. Não há validação, HWID de licença ou chave de produto nesta edição. |
 
