@@ -6,6 +6,8 @@
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/8f7ef6cf-117a-403f-8b04-96631431ffdd" />
 
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/db71a52f-9335-40d9-ae65-a4aca7981944" />
+
 
 > Imagem capturada da edição deste repositório. As capas são carregadas da Steam e podem faltar sem internet.
 
